@@ -1,0 +1,237 @@
+---
+# roles/nodejs/defaults/main.yml
+
+nodejs_debug: false
+
+nodejs_controller_user: '{{ project_controller_user }}'
+nodejs_controller_home: '{{ project_controller_home }}'
+nodejs_controller_resources_root: '{{ project_controller_resources_home }}'
+
+nodejs_deployment_user: '{{ project_deployment_user }}'
+nodejs_deployment_home: '{{ project_deployment_home }}'
+nodejs_deployment_resources_root: '{{ project_deployment_resources_home }}'
+
+## atomic versioning example
+#
+# nodejs_major: '0'
+# nodejs_moderate_revision: '0'
+# nodejs_minor_revision: '1'
+# nodejs_build: ''
+
+## Package #
+
+nodejs_package_state: 'present'
+nodejs_package_version: '2.0.1'
+nodejs_package_filename: "vagrant_{{ nodejs_package_version }}_i686.deb"
+
+nodejs_controller_resources_dir: '{{ nodejs_controller_resources_root }}/sw/vagrant/debs'
+nodejs_deployment_resources_dir: '{{ nodejs_deployment_resources_root }}/vagrant/debs'
+
+# /tests/sw/{{ ansible_distribution| lower }}/{{ ansible_distribution_version }}/miniconda'
+
+# Help file
+
+nodejs_acemenu_help_file_template_path: '{{ fact_role_path }}/templates/bin/acemenu/help/example_aceadmin_helpfile.md.j2'
+
+# Resources
+
+nodejs_package_url: "https://releases.hashicorp.com/vagrant/2.0.1/vagrant_2.0.1_i686.deb"
+# nodejs_checksum_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS"
+# nodejs_checksum_sig_url: "https://releases.hashicorp.com/vagrant/2.0.1/ vagrant_2.0.1_SHA256SUMS.sig"
+
+## links
+
+nodejs_default_link_force: true
+
+########################################
+
+# Resources
+
+nodejs_resources_on_local:
+
+  nodejs_local_directories:
+
+    state: 'directory'
+    path: '{{ nodejs_controller_resources_dir }}'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0755'
+
+  nodejs_local_clones:
+
+    become: ''
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ nodejs_controller_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  nodejs_local_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ nodejs_controller_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  nodejs_local_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ nodejs_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0700'
+
+  nodejs_local_file_touches:
+
+    state: 'touch'
+    path: '{{ nodejs_controller_resources_dir }}/copy_test.yml'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0770'
+
+  nodejs_local_templated_files:
+
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ nodejs_controller_resources_dir }}/test.md'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0700'
+
+  nodejs_local_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ nodejs_controller_resources_dir }}/test.md'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  nodejs_local_standard_sym_links:
+
+    state: "link"
+    src: '{{ nodejs_controller_resources_dir }}/test.md'
+    dest: '{{ nodejs_controller_resources_dir }}/my_local_link'
+    owner: '{{ nodejs_controller_user }}'
+    group: '{{ nodejs_controller_user }}'
+    mode: '0700'
+    force: '{{ nodejs_default_link_force }}'
+
+  nodejs_local_relative_sym_links:
+
+    link_name: 'relative_link'
+    link_target: 'test.md'
+    link_dir: '{{ nodejs_controller_resources_dir }}'
+    state: 'relative_link'
+#    owner: '{{ nodejs_controller_user }}'
+#    group: '{{ nodejs_controller_user }}'
+#    mode: '0700'
+
+nodejs_resources_on_remote:
+
+  nodejs_remote_directories:
+
+    state: 'directory'
+    path: '{{ nodejs_deployment_resources_dir }}'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0755'
+
+  nodejs_remote_clones:
+
+    become: true
+    repo: 'https://github.com/cjsteel/script-bash-acemenu.git'
+    dest: '{{ nodejs_deployment_resources_dir }}/acemenu'
+    mode: '0700'
+    clone: true
+
+  nodejs_remote_downloads:
+
+    url: 'https://repo.continuum.io/miniconda/Miniconda2-4.3.30-Linux-x86_64.sh'
+    dest: '{{ nodejs_deployment_resources_dir }}/Miniconda2-latest-Linux-x86_64.sh'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'
+    checksum: 'md5:bd1655b4b313f7b2a1f2e15b7b925d03'
+    resource_type: 'url'
+
+  nodejs_remote_file_copies:
+
+    state: "copy"
+    src: './files/example_playbook.yml'
+    dest: '{{ nodejs_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'
+
+  nodejs_remote_file_touches:
+
+    state: 'touch'
+    path: '{{ nodejs_deployment_resources_dir }}/copy_test.yml'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0770'
+
+  nodejs_remote_templates_files:
+
+    state: 'template'
+    src: './templates/template_test.md.j2'
+    dest: '{{ nodejs_deployment_resources_dir }}/test.md'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'
+
+  nodejs_remote_blocksinfile:
+
+    type: 'blockinfile'
+    path: '{{ nodejs_deployment_resources_dir }}/test.md'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'
+    insertafter: "EOF"
+    block: |
+      # if running bash
+      if [ -n "$BASH_VERSION" ]; then
+          # include /opt/display/bin/display if it exists
+          if [ -f "/opt/display/bin/display" ]; then
+              PATH="/opt/display/bin:$PATH"
+
+       	. "/opt/display/bin/"
+          fi
+      fi
+    state: "present"
+
+  nodejs_remote_standard_sym_links:
+
+    state: 'link'
+    src: '{{ nodejs_deployment_resources_dir }}/test.md'
+    dest: '{{ nodejs_deployment_resources_dir }}/my_remote_link'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'
+    force: '{{ nodejs_default_link_force }}'
+
+  nodejs_remote_relative_sym_links:
+
+    state: 'relative_link'
+    link_dir: '{{ nodejs_deployment_resources_dir }}'
+    link_name: 'my_relative_link'
+    link_target: 'test.md'
+    owner: '{{ nodejs_deployment_user }}'
+    group: '{{ nodejs_deployment_user }}'
+    mode: '0700'

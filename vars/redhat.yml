@@ -1,0 +1,4 @@
+---
+# roles/nodejs/vars/debian.yml
+
+nodejs_package_extension: 'rpm'

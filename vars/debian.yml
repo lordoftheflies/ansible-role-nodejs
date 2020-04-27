@@ -1,0 +1,5 @@
+---
+# roles/nodejs/vars/debian.yml
+
+# Debian specific vars
+nodejs_package_extension: 'deb'

@@ -1,0 +1,9 @@
+---
+- name: Converge
+  hosts: all
+  vars:
+    - nodejs_deployment_users_home: /root
+    - nodejs_testing_provider: lxd
+
+  roles:
+    - nodejs
